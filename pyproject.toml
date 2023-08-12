@@ -1,0 +1,52 @@
+[tool.poetry]
+name = "flake8-docstrings"
+version = "attr: flake8_docstrings.__version__"
+description = "Extension for flake8 which uses pydocstyle to check docstrings"
+authors = ["Simon ANDRÉ <sandre@anybox.fr>", "Ian Cordasco <graffatcolmingov@gmail.com>"]
+readme = "README.rst"
+classifiers = [
+    
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: Implementation :: CPython"
+]
+url = "https://github.com/pycqa/flake8-docstrings"
+keywords = "PEP 257, pydocstyle, pep257, docstrings, flake8"
+provides = "flake8_docstrings"
+
+[tool.poetry.dependencies]
+python = "^3.7"
+flake8 = "^3"
+pydocstyle = "^2.1"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.tox]
+minversion = "1.6"
+envlist = ["pre-commit","py"]
+
+[tool.tox.testenv]
+deps = ["flake8"]
+commands = ["flake8 {posargs} flake8_docstrings.py"]
+
+[tool.tox.testenv.release]
+basepython = "python3.9"
+deps = ["twine >= 1.5.0", "wheel"]
+commands = ["python setup.py sdist bdist_wheel", "twine upload --skip-existing {posargs} dist/*"]
+
+[tool.tox.testenv.pydocstyle]
+deps = ["pydocstyle"]
+commands = ["pydocstyle"]
+
+[tool.tox.testenv.pre-commit]
+commands = ["pre-commit run --all-files"]
+deps = ["pre-commit"]
+
+[tool.flake8]
+deps = ["flake8"]
+commands = ["flake8"]

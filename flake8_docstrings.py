@@ -1,7 +1,30 @@
 """Implementation of pydocstyle integration with Flake8.
 
-pydocstyle docstrings convention needs error code and class parser for be
-included as module into flake8
+The pydocstyle docstring convention requires an error code and a class parser to be
+included as a module in flake8. This integration allows flake8 to check for compliance
+with the specified docstring convention.
+
+This module contains several classes and methods to integrate pydocstyle with Flake8.
+
+The module starts by importing necessary libraries and setting up some variables. It then
+defines several classes, including `_ContainsAll`, `EnvironError`, `AllError`, and `pep257Checker`.
+
+The `_ContainsAll` class is a simple class that always returns True for any `__contains__` check.
+
+The `EnvironError` and `AllError` classes are custom error classes that inherit from `pep257.Error`.
+They override the `line` property to return 0, and provide custom error messages.
+
+The `pep257Checker` class is the main class of this module. It is responsible for checking a Python
+file against the specified docstring convention. It has several methods to initialize the checker,
+add and parse options, and run the check.
+
+The `add_options` method adds plugin configuration options to flake8. The `parse_options` method
+parses these options. The `_call_check_source` and `_check_source` methods are helper methods for
+the `run` method, which uses the `check()` API from pydocstyle to perform the check.
+
+The module ends with some error handling and message formatting.
+
+
 """
 import re
 
@@ -29,11 +52,17 @@ __all__ = ("pep257Checker",)
 
 
 class _ContainsAll:
-    def __contains__(self, code):  # type: (str) -> bool
+    """A class that always returns True for any `__contains__` check."""
+    def __contains__(self, code: str) -> bool:
         return True
 
 
 class EnvironError(pep257.Error):
+    """Custom error class for environment errors.
+
+    This class inherits from pep257.Error and overrides the line property to return 0.
+    It provides a custom error message that includes the original environment error.
+    """  
     def __init__(self, err):
         super().__init__(
             code="D998",
@@ -48,6 +77,11 @@ class EnvironError(pep257.Error):
 
 
 class AllError(pep257.Error):
+    """Custom error class for all errors.
+
+    This class inherits from pep257.Error and overrides the line property to return 0.
+    It provides a custom error message that includes the original error.
+    """   
     def __init__(self, err):
         super().__init__(
             code="D999",
