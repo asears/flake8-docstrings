@@ -4,3 +4,4 @@ flake8_docstrings.egg-info
 dist/
 .tox/
 build/
+.coverage

@@ -23,8 +23,6 @@ parses these options. The `_call_check_source` and `_check_source` methods are h
 the `run` method, which uses the `check()` API from pydocstyle to perform the check.
 
 The module ends with some error handling and message formatting.
-
-
 """
 import re
 
@@ -32,13 +30,17 @@ supports_ignore_inline_noqa = False
 supports_property_decorators = False
 supports_ignore_self_only_init = False
 try:
+    # Here we are trying to import the pydocstyle module as pep257.
+    # If the import is successful, we set the module_name to "pydocstyle" and parse the version number.
+    # We also set several support flags based on the version number.
+    # For example, if the version is 6.0.0 or higher, we set supports_ignore_inline_noqa to True.
+    # If the import fails, we fall back to importing pep257 and set the module_name to "pep257".
+
     import pydocstyle as pep257
 
     module_name = "pydocstyle"
 
-    pydocstyle_version = tuple(
-        int(num) for num in pep257.__version__.split(".")
-    )
+    pydocstyle_version = tuple(int(num) for num in pep257.__version__.split("."))
     supports_ignore_inline_noqa = pydocstyle_version >= (6, 0, 0)
     supports_property_decorators = pydocstyle_version >= (6, 2, 0)
     supports_ignore_self_only_init = pydocstyle_version >= (6, 3, 0)
@@ -53,6 +55,7 @@ __all__ = ("pep257Checker",)
 
 class _ContainsAll:
     """A class that always returns True for any `__contains__` check."""
+
     def __contains__(self, code: str) -> bool:
         return True
 
@@ -62,7 +65,8 @@ class EnvironError(pep257.Error):
 
     This class inherits from pep257.Error and overrides the line property to return 0.
     It provides a custom error message that includes the original environment error.
-    """  
+    """
+
     def __init__(self, err):
         super().__init__(
             code="D998",
@@ -81,7 +85,8 @@ class AllError(pep257.Error):
 
     This class inherits from pep257.Error and overrides the line property to return 0.
     It provides a custom error message that includes the original error.
-    """   
+    """
+
     def __init__(self, err):
         super().__init__(
             code="D999",
@@ -167,12 +172,16 @@ class pep257Checker:
 
     @classmethod
     def parse_options(cls, options):
-        """Parse the configuration options given to flake8."""
+        """Parse the configuration options given to flake8.
+
+        This method parses the configuration options given to flake8 and sets the class variables accordingly.
+
+        Args:
+            options (OptionManager): The configuration options given to flake8.
+        """
         cls.convention = options.docstring_convention
         cls.ignore_decorators = (
-            re.compile(options.ignore_decorators)
-            if options.ignore_decorators
-            else None
+            re.compile(options.ignore_decorators) if options.ignore_decorators else None
         )
         if supports_property_decorators:
             cls.property_decorators = options.property_decorators
@@ -190,14 +199,15 @@ class pep257Checker:
                 else None
             )
         if supports_ignore_self_only_init:
-            check_source_kwargs[
-                "ignore_self_only_init"
-            ] = self.ignore_self_only_init
+            check_source_kwargs["ignore_self_only_init"] = self.ignore_self_only_init
 
+        ignore_decorators = None
+        if hasattr(self, "ignore_decorators"):
+            ignore_decorators = self.ignore_decorators
         return self.checker.check_source(
             self.source,
             self.filename,
-            ignore_decorators=self.ignore_decorators,
+            ignore_decorators=ignore_decorators,
             **check_source_kwargs,
         )
 
@@ -212,10 +222,16 @@ class pep257Checker:
 
     def run(self):
         """Use directly check() api from pydocstyle."""
-        if self.convention == "all":
-            checked_codes = _ContainsAll()
+        if hasattr(self, "convention"):
+            if self.convention == "all":
+                checked_codes = _ContainsAll()
+            else:
+                checked_codes = pep257.conventions[self.convention] | {
+                    "D998",
+                    "D999",
+                }
         else:
-            checked_codes = pep257.conventions[self.convention] | {
+            checked_codes = {
                 "D998",
                 "D999",
             }
